@@ -101,9 +101,9 @@ class Robot():
     th_dot_m     = Matrix.zeros(3, self.muestras)
     th_dot_dot_m = Matrix.zeros(3, self.muestras)
     # Agregar valor conocido
-    th_m[:, 0] = Matrix([xi_i[0], 
-                         xi_i[1], 
-                         xi_i[2]])
+    th_m[:, 0] = Matrix([th_i[0], 
+                         th_i[1], 
+                         th_i[2]])
     #Muestreo de las juntas
     for i in range(self.muestras):
       # Velocidades
