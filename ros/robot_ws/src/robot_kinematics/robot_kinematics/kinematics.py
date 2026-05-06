@@ -91,8 +91,47 @@ class Robot():
       xi_dot_m[:, i]     = xi_dot_eq.    subs({self.t: t_m[i]})
       xi_dot_dot_m[:, i] = xi_dot_dot_eq.subs({self.t: t_m[i]})
     print(xi_m[:, self.muestras - 1])
-    
-    self.xi_m = xi_m
+    # ---- Cinemática inversa
+    # Velocidades de las juntas como ecuación
+    th_dot_eq = self.J_inv * Matrix([self.x_dot, 
+                                     self.z_dot,
+                                     self.beta_dot])
+    # Posición, velocidad y aceleración de las juntas
+    th_m         = Matrix.zeros(3, self.muestras)
+    th_dot_m     = Matrix.zeros(3, self.muestras)
+    th_dot_dot_m = Matrix.zeros(3, self.muestras)
+    # Agregar valor conocido
+    th_m[:, 0] = Matrix([xi_i[0], 
+                         xi_i[1], 
+                         xi_i[2]])
+    #Muestreo de las juntas
+    for i in range(self.muestras):
+      # Velocidades
+      th_dot_m[:, i] = th_dot_eq.subs({
+        self.th1: th_m[0, i],
+        self.th2: th_m[1, i],
+        self.th3: th_m[2, i],
+        self.x_dot:    xi_dot_m[0, i],
+        self.z_dot:    xi_dot_m[1, i],
+        self.beta_dot: xi_dot_m[2, i]})
+      th_dot_m[:, i] = th_dot_m[:, i].evalf()
+      if i < self.muestras - 1:
+        # Posiciones
+        th_m[:, i+1] = th_m[:, i] + th_dot_m[:, i] * self.dt
+      if not (i == 0):
+        # Aceleración
+        th_dot_dot_m[:, i-1] = (th_dot_m[:, i] - th_dot_m[:, i-1]) / self.dt
+      
+    # Guardar variables en la clase 
+    # Efector final
+    self.xi_m         = xi_m
+    self.xi_dot_m     = xi_dot_m
+    self.xi_dot_dot_m = xi_dot_dot_m
+    # Juntas
+    self.th_m         = th_m
+    self.th_dot_m     = th_dot_m
+    self.th_dot_dot_m = th_dot_dot_m
+    # Tiempo
     self.t_m = t_m
 
   def imp_tray(self):
@@ -104,6 +143,17 @@ class Robot():
     x_g.plot(self.t_m.T,  self.xi_m[0, :].T, color="RED")
     z_g.plot(self.t_m.T,  self.xi_m[1, :].T, color="green")
     be_g.plot(self.t_m.T, self.xi_m[2, :].T, color=(0,0,1))
+    plt.show()
+    pass
+  def imp_junt(self):
+    fig, (th1_g, th2_g, th3_g) = plt.subplots(nrows = 1, ncols = 3)
+    fig.suptitle("Posiciones de las juntas")
+    th1_g.set_title("th1")
+    th2_g.set_title("th2")
+    th3_g.set_title("th3")
+    th1_g.plot(self.t_m.T,  self.th_m[0, :].T, color="RED")
+    th2_g.plot(self.t_m.T,  self.th_m[1, :].T, color="green")
+    th3_g.plot(self.t_m.T,  self.th_m[2, :].T, color=(0,0,1))
     plt.show()
     pass
   def tr_h(self, x=0, y=0, z=0,
@@ -127,5 +177,6 @@ def main():
   robot = Robot()
   robot.def_tray()
   robot.imp_tray()
+  robot.imp_junt()
 if __name__ == "__main__":
   main()
