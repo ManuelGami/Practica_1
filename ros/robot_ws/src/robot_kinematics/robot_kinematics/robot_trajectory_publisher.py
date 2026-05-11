@@ -35,7 +35,6 @@ class PublicadorTrayectoria(Node):
   def twist_callback(self, msg:Twist):
     if self.is_moving:
       return
-    self.get_logger().warn("dSADSADSADSA")
     self.is_moving = True
     self.get_logger().info("Posición recibida: {}".format(str(msg.linear)))
     self.robot.def_tray(
