@@ -43,27 +43,18 @@ class PublicadorTrayectoria(Node):
     (self.robot.th_m[:, self.robot.muestras - 1]))
     self.robot.imp_tray()
     self.robot.imp_junt()
-    # Publicando trayectoria de las juntas
-    self.current_pos = 0
-    self.timer_pub = self.create_timer(self.robot.dt,self.timer_pub_callback)
-
-
-  def timer_pub_callback(self):
+    # Publicando última posición de las juntas
     # Agregar marca de tiempo
     self.joint_state_msg.header.stamp = self.get_clock().now().to_msg()
     # Agregar posición de las juntas
     self.joint_state_msg.position = [
-      float(self.robot.th_m[0, self.current_pos]),
-      float(self.robot.th_m[1, self.current_pos]),
-      float(self.robot.th_m[2, self.current_pos])]
+      float(self.robot.th_m[0, self.robot.muestras - 1]),
+      float(self.robot.th_m[1, self.robot.muestras - 1]),
+      float(self.robot.th_m[2, self.robot.muestras - 1])]
     # Publicar
     self.js_pub.publish(self.joint_state_msg)
-    # Incrementar posición actual
-    self.current_pos += 1
-    # Liberar el movimiento del robot cuando llegue a la última
-    if self.current_pos == (self.robot.muestras - 1):
-      self.is_moving = False
-      self.timer_pub.destroy()
+    # Liberar el movimiento del robot
+    self.is_moving = False
     
 
 def main():
