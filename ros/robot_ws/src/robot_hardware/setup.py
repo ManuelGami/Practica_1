@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'robot_kinematics'
+package_name = 'robot_hardware'
 
 setup(
     name=package_name,
@@ -24,7 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-          "trajectory_publisher=robot_kinematics.robot_trajectory_publisher:main"
+          "robot_hardware=robot_hardware.robot_actuators:main"
         ],
     },
 )

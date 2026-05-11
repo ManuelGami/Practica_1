@@ -15,10 +15,15 @@ class PublicadorTrayectoria(Node):
                                               "/goals_twist",
                                               self.twist_callback,
                                               1)
-    # Publicador estado de las juntas
+    # Publicador estado de las juntas deseado
     self.js_pub = self.create_publisher(JointState, 
-                                        "/joint_states",
+                                        "/joint_states_goals",
                                         1)
+    # Suscriptor a estado de las juntas actual
+    self.js_sub = self.create_subscription(
+      JointState,"/joint_states",
+      self.js_callback, 10)
+
     # Variable de estado de movimiento
     self.is_moving = False
     # Mensaje de estado de las juntas
@@ -30,12 +35,16 @@ class PublicadorTrayectoria(Node):
   def twist_callback(self, msg:Twist):
     if self.is_moving:
       return
+    self.get_logger().warn("dSADSADSADSA")
     self.is_moving = True
     self.get_logger().info("Posición recibida: {}".format(str(msg.linear)))
-    self.robot.def_tray(th_i=(0.1, 0.1, 0.1), 
-                        xi_f=(msg.linear.x, 
-                              msg.linear.z, 
-                              msg.angular.y))
+    self.robot.def_tray(
+      th_i=(self.js_current.position[0],
+            self.js_current.position[1],
+            self.js_current.position[2]), 
+      xi_f=(msg.linear.x, 
+            msg.linear.z, 
+            msg.angular.y))
     self.get_logger().info("Posición final EF: {}".format
     (self.robot.xi_m[:, self.robot.muestras - 1]))
 
@@ -64,7 +73,10 @@ class PublicadorTrayectoria(Node):
     if self.current_pos == (self.robot.muestras - 1):
       self.is_moving = False
       self.timer_pub.destroy()
-    
+  
+  def js_callback(self, msg:JointState):
+    # Guardar en una variable el estado actual de las juntas
+    self.js_current = msg
 
 def main():
   try:
