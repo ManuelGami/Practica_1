@@ -2,7 +2,7 @@
 import rclpy
 from rclpy.node import Node
 from robot_kinematics.kinematics import Robot
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, PointStamped
 from sensor_msgs.msg import JointState
 
 class PublicadorTrayectoria(Node):
@@ -10,11 +10,16 @@ class PublicadorTrayectoria(Node):
     super().__init__("nodo_publicador")
     # Instanciar robot
     self.robot = Robot()
-    # Suscriptor para posiciones deseadas
+    # Suscriptor para posiciones deseadas (Twist)
     self.sub_twist = self.create_subscription(Twist, 
                                               "/goals_twist",
                                               self.twist_callback,
                                               1)
+    # Suscriptor para posiciones deseadas (Point)
+    self.sub_ps = self.create_subscription(PointStamped, 
+                                            "/clicked_point",
+                                            self.ps_callback,
+                                            1)
     # Publicador estado de las juntas deseado
     self.js_pub = self.create_publisher(JointState, 
                                         "/joint_states_goals",
@@ -51,6 +56,30 @@ class PublicadorTrayectoria(Node):
     (self.robot.th_m[:, self.robot.muestras - 1]))
     self.robot.imp_tray()
     self.robot.imp_junt()
+    # Publicando trayectoria de las juntas
+    self.current_pos = 0
+    self.timer_pub = self.create_timer(self.robot.dt,self.timer_pub_callback)
+  
+  # Callback de posición deseada como PointStamped
+  def ps_callback(self, msg:PointStamped):
+    if self.is_moving:
+      return
+    self.is_moving = True
+    self.get_logger().info("Posición recibida: {}".format(str(msg.point)))
+    self.robot.def_tray(
+      th_i=(self.js_current.position[0],
+            self.js_current.position[1],
+            self.js_current.position[2]), 
+      xi_f=(msg.point.x, 
+            msg.point.z, 
+            0))
+    self.get_logger().info("Posición final EF: {}".format
+    (self.robot.xi_m[:, self.robot.muestras - 1]))
+
+    self.get_logger().info("Posición final juntas: {}".format
+    (self.robot.th_m[:, self.robot.muestras - 1]))
+    #self.robot.imp_tray()
+    #self.robot.imp_junt()
     # Publicando trayectoria de las juntas
     self.current_pos = 0
     self.timer_pub = self.create_timer(self.robot.dt,self.timer_pub_callback)
