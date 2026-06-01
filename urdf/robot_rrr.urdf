@@ -1,71 +1,87 @@
-<robot name="robot">
-  <!--Descripción de los eslabones-->
+<?xml version="1.0"?>
+<robot name="robot_rrr">
+
+  <material name="blue"><color rgba="0.0 0.0 0.8 1.0"/></material>
+  <material name="green"><color rgba="0.0 0.8 0.0 1.0"/></material>
+  <material name="red"><color rgba="0.8 0.0 0.0 1.0"/></material>
+  <material name="grey"><color rgba="0.5 0.5 0.5 1.0"/></material>
+
   <link name="base_link">
     <visual>
-      <geometry>
-        <box size="0.5 0.5 0.1"/>
-      </geometry>
-      <origin xyz="0 0 -0.05"/>
-      <material name="black">
-        <color rgba="0 0 0 0.5"/>
-      </material>
+      <geometry><cylinder length="0.1" radius="0.2"/></geometry>
+      <origin xyz="0 0 0.05" rpy="0 0 0"/>
+      <material name="grey"/>
     </visual>
   </link>
 
-  <link name="shoulder_link">
+  <link name="link_columna">
     <visual>
-      <geometry>
-        <box size="0.3 0.05 0.05"/>
-      </geometry>
-      <origin xyz="0.15 0 0"/>
-      <material name="cyan">
-        <color rgba="0 1 1 1"/>
-      </material>
-    </visual>
-  </link>
-  <link name="arm_link">
-    <visual>
-      <geometry>
-        <box size="0.3 0.05 0.05"/>
-      </geometry>
-      <origin xyz="0.15 0 0"/>
-      <material name="magenta">
-        <color rgba="1 0 1 1"/>
-      </material>
-    </visual>
-  </link>
-  <link name="forearm_link">
-    <visual>
-      <geometry>
-        <box size="0.3 0.05 0.05"/>
-      </geometry>
-      <origin xyz="0.15 0 0"/>
-      <material name="yellow">
-        <color rgba="1 1 0 1"/>
-      </material>
+      <geometry><cylinder length="0.6" radius="0.05"/></geometry>
+      <origin xyz="0 0 0.3" rpy="0 0 0"/>
+      <material name="blue"/>
     </visual>
   </link>
 
-  <!--Descripción de las juntas-->
-  <joint name="shoulder_joint" type="revolute"> <!--tipo de junta: revolute, prismatic, fixed-->
+  <link name="link_brazo_azul">
+    <visual>
+      <geometry><box size="0.4 0.08 0.08"/></geometry>
+      <origin xyz="0.2 0 0" rpy="0 0 0"/>
+      <material name="blue"/>
+    </visual>
+  </link>
+
+  <link name="link2">
+    <visual>
+      <geometry><box size="0.4 0.06 0.06"/></geometry>
+      <origin xyz="0.2 0 0" rpy="0 0 0"/>
+      <material name="green"/>
+    </visual>
+  </link>
+
+  <link name="link2_punta"/>
+
+  <link name="link3">
+    <visual>
+      <geometry><cylinder length="0.3" radius="0.02"/></geometry>
+      <origin xyz="0 0 -0.15" rpy="0 0 0"/>
+      <material name="red"/>
+    </visual>
+  </link>
+
+  <joint name="joint1" type="revolute">
     <parent link="base_link"/>
-    <child link="shoulder_link"/>
+    <child link="link_columna"/>
+    <origin xyz="0 0 0.1" rpy="0 0 0"/>
     <axis xyz="0 0 1"/>
-    <limit lower="-3.14" upper ="3.14" effort="10.0" velocity="10.0"/>
-    <origin rpy="1.57 0 0" xyz="0 0 0"/> <!--roll, pitch, yaw-->
+    <limit effort="10.0" lower="-3.1416" upper="3.1416" velocity="1.0"/>
   </joint>
-  <joint name="arm_joint" type="revolute"> <!--tipo de junta: revolute, prismatic, fixed-->
-    <parent link="shoulder_link"/>
-    <child link="arm_link"/>
+
+  <joint name="junta_fija_L" type="fixed">
+    <parent link="link_columna"/>
+    <child link="link_brazo_azul"/>
+    <origin xyz="0 0 0.6" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="joint2" type="revolute">
+    <parent link="link_brazo_azul"/>
+    <child link="link2"/>
+    <origin xyz="0.4 0 0.07" rpy="0 0 0"/>
     <axis xyz="0 0 1"/>
-    <limit lower="-3.14" upper ="3.14" effort="10.0" velocity="10.0"/>
-    <origin xyz="0.3 0 0" rpy="0 0 0"/>
+    <limit effort="10.0" lower="-2.5" upper="2.5" velocity="1.0"/>
   </joint>
-  <joint name="forearm_joint" type="revolute"> <!--tipo de junta: revolute, prismatic, fixed-->
-    <parent link="arm_link"/>
-    <child link="forearm_link"/>
+
+  <joint name="junta_referencia_verde" type="fixed">
+    <parent link="link2"/>
+    <child link="link2_punta"/>
+    <origin xyz="0.4 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="joint3" type="prismatic">
+    <parent link="link2_punta"/>
+    <child link="link3"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
     <axis xyz="0 0 1"/>
-    <limit lower="-3.14" upper ="3.14" effort="10.0" velocity="10.0"/>
-    <origin xyz="0.3 0 0"/>
+    <limit effort="10.0" lower="-0.25" upper="0.0" velocity="1.0"/>
   </joint>
+
 </robot>
